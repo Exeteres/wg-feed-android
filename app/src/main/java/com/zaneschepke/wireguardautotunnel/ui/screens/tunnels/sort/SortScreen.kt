@@ -99,7 +99,7 @@ fun SortScreen(sharedViewModel: SharedAppViewModel = koinActivityViewModel()) {
             ReorderableItem(reorderableLazyListState, tunnel.id) { isDragging ->
                 ExpandingRowListItem(
                     leading = {},
-                    text = tunnel.name,
+                    text = tunnel.displayTitle ?: tunnel.name,
                     trailing = {
                         if (!isTv)
                             Icon(Icons.Default.DragHandle, stringResource(R.string.drag_handle))

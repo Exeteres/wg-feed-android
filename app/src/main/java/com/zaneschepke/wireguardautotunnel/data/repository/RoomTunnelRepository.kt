@@ -95,4 +95,8 @@ class RoomTunnelRepository(private val tunnelConfigDao: TunnelConfigDao) : Tunne
     override suspend fun delete(tunnels: List<Domain>) {
         tunnelConfigDao.delete(tunnels.map { it.toEntity() })
     }
+
+    override suspend fun getByFeedSubscriptionId(subscriptionId: Int): List<Domain> {
+        return tunnelConfigDao.getByFeedSubscriptionId(subscriptionId).map { it.toDomain() }
+    }
 }

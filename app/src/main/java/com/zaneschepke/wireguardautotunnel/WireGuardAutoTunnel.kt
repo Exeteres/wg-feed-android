@@ -11,9 +11,14 @@ import com.zaneschepke.wireguardautotunnel.di.databaseModule
 import com.zaneschepke.wireguardautotunnel.di.dispatchersModule
 import com.zaneschepke.wireguardautotunnel.di.networkModule
 import com.zaneschepke.wireguardautotunnel.di.tunnelModule
+import com.zaneschepke.wireguardautotunnel.di.wgFeedModule
 import com.zaneschepke.wireguardautotunnel.di.workerModule
 import com.zaneschepke.wireguardautotunnel.domain.repository.MonitoringSettingsRepository
 import com.zaneschepke.wireguardautotunnel.util.ReleaseTree
+import com.zaneschepke.wireguardautotunnel.wgfeed.data.dao.FeedSubscriptionDao
+import com.zaneschepke.wireguardautotunnel.wgfeed.worker.WgFeedPollingScheduler
+import com.zaneschepke.wireguardautotunnel.wgfeed.worker.WgFeedRealtimeWorker
+import com.zaneschepke.wireguardautotunnel.wgfeed.worker.WgFeedSyncWorker
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -41,13 +46,22 @@ class WireGuardAutoTunnel : Application(), KoinComponent {
     private val monitoringRepository: MonitoringSettingsRepository by inject()
     private val notificationMonitor: NotificationMonitor by inject()
 
+    private val feedSubscriptionDao: FeedSubscriptionDao by inject()
+
     override fun onCreate() {
         super.onCreate()
         startKoin {
             androidContext(this@WireGuardAutoTunnel)
             if (BuildConfig.DEBUG) androidLogger()
             workManagerFactory()
-            modules(dispatchersModule, appModule, databaseModule, tunnelModule, workerModule)
+            modules(
+                dispatchersModule,
+                appModule,
+                databaseModule,
+                tunnelModule,
+                workerModule,
+                wgFeedModule
+            )
             options(viewModelScopeFactory())
             lazyModules(networkModule)
         }
@@ -79,7 +93,29 @@ class WireGuardAutoTunnel : Application(), KoinComponent {
                     }
             }
             launch { notificationMonitor.handleApplicationNotifications() }
+
+            // wg-feed polling: reset any pending one-shot work and schedule next run per subscription
+            launch {
+                WgFeedPollingScheduler.cancelAll(this@WireGuardAutoTunnel)
+
+                feedSubscriptionDao.getPollingSubscriptions().forEach { sub ->
+                    WgFeedPollingScheduler.schedule(this@WireGuardAutoTunnel, sub)
+                }
+            }
+
+            // wg-feed realtime: ensure singleton foreground SSE worker is running only when needed
+            launch {
+                val eligible = feedSubscriptionDao.getRealtimeSubscriptions().isNotEmpty()
+                if (eligible) {
+                    WgFeedRealtimeWorker.start(this@WireGuardAutoTunnel)
+                } else {
+                    WgFeedRealtimeWorker.stop(this@WireGuardAutoTunnel)
+                }
+            }
         }
+
+        // Periodic trigger as a safety net.
+        WgFeedSyncWorker.start(this)
     }
 
     companion object {
@@ -92,7 +128,8 @@ class WireGuardAutoTunnel : Application(), KoinComponent {
             _uiActive.update { active }
         }
 
-        @Volatile private var lastActiveTunnels: List<Int> = emptyList()
+        @Volatile
+        private var lastActiveTunnels: List<Int> = emptyList()
 
         @Synchronized
         fun getLastActiveTunnels(): List<Int> {

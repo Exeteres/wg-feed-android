@@ -35,7 +35,14 @@ class TunnelActiveStatePersister(
                             val wasActive = previousActiveIds.contains(id)
                             val isActive = currentActiveIds.contains(id)
                             if (wasActive != isActive) {
-                                tunnelsRepository.save(config.copy(isActive = isActive))
+                                if (!isActive) {
+                                    // Spec/UX: clear "tunnel changed" warning when the tunnel stops.
+                                    tunnelsRepository.save(
+                                        config.copy(isActive = false, isRestartRequired = false)
+                                    )
+                                } else {
+                                    tunnelsRepository.save(config.copy(isActive = true))
+                                }
                             }
                         }
                     }

@@ -45,4 +45,6 @@ interface TunnelRepository {
     suspend fun findPrimary(): List<TunnelConfig>
 
     suspend fun delete(tunnels: List<TunnelConfig>)
+
+    suspend fun getByFeedSubscriptionId(subscriptionId: Int): List<TunnelConfig>
 }

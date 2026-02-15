@@ -3,6 +3,7 @@ package com.zaneschepke.wireguardautotunnel.di
 import com.zaneschepke.wireguardautotunnel.data.network.GitHubApi
 import com.zaneschepke.wireguardautotunnel.data.network.KtorClient
 import com.zaneschepke.wireguardautotunnel.data.network.KtorGitHubApi
+import com.zaneschepke.wireguardautotunnel.data.network.KtorSseClient
 import com.zaneschepke.wireguardautotunnel.data.repository.GitHubUpdateRepository
 import com.zaneschepke.wireguardautotunnel.domain.repository.UpdateRepository
 import org.koin.android.ext.koin.androidContext
@@ -13,6 +14,7 @@ import org.koin.dsl.lazyModule
 
 val networkModule = lazyModule {
     single { KtorClient.create() }
+    single(named("sse")) { KtorSseClient.create() }
     singleOf(::KtorGitHubApi) bind GitHubApi::class
 
     single<UpdateRepository> {

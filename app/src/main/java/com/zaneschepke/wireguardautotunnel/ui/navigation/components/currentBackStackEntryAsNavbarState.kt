@@ -1,7 +1,7 @@
 package com.zaneschepke.wireguardautotunnel.ui.navigation.components
 
 import android.os.Build
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.automirrored.rounded.Sort
@@ -10,14 +10,20 @@ import androidx.compose.material.icons.outlined.CopyAll
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
 import com.zaneschepke.wireguardautotunnel.R
+import com.zaneschepke.wireguardautotunnel.ui.common.icon.DataIcon
 import com.zaneschepke.wireguardautotunnel.ui.navigation.NavController
 import com.zaneschepke.wireguardautotunnel.ui.navigation.Route
 import com.zaneschepke.wireguardautotunnel.ui.navigation.Route.*
@@ -53,6 +59,7 @@ fun currentRouteAsNavbarState(
                         showBottomItems = true,
                         topTitle = context.getString(R.string.advanced_settings),
                     )
+
                 Appearance ->
                     NavbarState(
                         topLeading = {
@@ -66,6 +73,7 @@ fun currentRouteAsNavbarState(
                         showBottomItems = true,
                         topTitle = context.getString(R.string.appearance),
                     )
+
                 AutoTunnel ->
                     NavbarState(
                         showBottomItems = true,
@@ -75,6 +83,7 @@ fun currentRouteAsNavbarState(
                                 context.getString(R.string.auto_tunnel)
                             },
                     )
+
                 Display ->
                     NavbarState(
                         topLeading = {
@@ -88,6 +97,7 @@ fun currentRouteAsNavbarState(
                         showBottomItems = true,
                         topTitle = context.getString(R.string.display_theme),
                     )
+
                 Dns ->
                     NavbarState(
                         topLeading = {
@@ -101,6 +111,7 @@ fun currentRouteAsNavbarState(
                         showBottomItems = true,
                         topTitle = context.getString(R.string.dns_settings),
                     )
+
                 Language ->
                     NavbarState(
                         topLeading = {
@@ -114,6 +125,7 @@ fun currentRouteAsNavbarState(
                         showBottomItems = true,
                         topTitle = context.getString(R.string.language),
                     )
+
                 LockdownSettings ->
                     NavbarState(
                         topLeading = {
@@ -137,6 +149,7 @@ fun currentRouteAsNavbarState(
                             }
                         },
                     )
+
                 License ->
                     NavbarState(
                         topLeading = {
@@ -150,6 +163,7 @@ fun currentRouteAsNavbarState(
                         showBottomItems = true,
                         topTitle = context.getString(R.string.licenses),
                     )
+
                 LocationDisclosure -> NavbarState(showBottomItems = true)
                 Lock -> NavbarState(showBottomItems = false)
                 Logs ->
@@ -176,6 +190,7 @@ fun currentRouteAsNavbarState(
                             }
                         },
                     )
+
                 ProxySettings ->
                     NavbarState(
                         topLeading = {
@@ -199,11 +214,13 @@ fun currentRouteAsNavbarState(
                             }
                         },
                     )
+
                 Settings ->
                     NavbarState(
                         showBottomItems = true,
                         topTitle = context.getString(R.string.settings),
                     )
+
                 Sort ->
                     NavbarState(
                         topLeading = {
@@ -235,6 +252,7 @@ fun currentRouteAsNavbarState(
                             }
                         },
                     )
+
                 is Config,
                 is ConfigGlobal -> {
                     val tunnelName =
@@ -252,17 +270,22 @@ fun currentRouteAsNavbarState(
                         showBottomItems = true,
                         topTitle = tunnelName ?: context.getString(R.string.new_tunnel),
                         topTrailing = {
-                            IconButton(
-                                onClick = {
-                                    keyboardController?.hide()
-                                    sharedViewModel.postSideEffect(LocalSideEffect.SaveChanges)
+                            // Hide Save for feed-managed/read-only tunnels, but keep config screen accessible.
+                            val isReadOnlyTunnel = (route is Config) && globalState.readOnlyTunnelIds.contains(route.id)
+                            if (!isReadOnlyTunnel) {
+                                IconButton(
+                                    onClick = {
+                                        keyboardController?.hide()
+                                        sharedViewModel.postSideEffect(LocalSideEffect.SaveChanges)
+                                    }
+                                ) {
+                                    Icon(Icons.Rounded.Save, stringResource(R.string.save))
                                 }
-                            ) {
-                                Icon(Icons.Rounded.Save, stringResource(R.string.save))
                             }
                         },
                     )
                 }
+
                 is SplitTunnel,
                 is SplitTunnelGlobal -> {
                     val tunnelName =
@@ -304,11 +327,13 @@ fun currentRouteAsNavbarState(
                         showBottomItems = true,
                     )
                 }
+
                 Support ->
                     NavbarState(
                         topTitle = context.getString(R.string.support),
                         showBottomItems = true,
                     )
+
                 AndroidIntegrations ->
                     NavbarState(
                         topLeading = {
@@ -322,6 +347,7 @@ fun currentRouteAsNavbarState(
                         topTitle = context.getString(R.string.android_integrations),
                         showBottomItems = true,
                     )
+
                 TunnelMonitoring ->
                     NavbarState(
                         topLeading = {
@@ -335,8 +361,10 @@ fun currentRouteAsNavbarState(
                         topTitle = context.getString(R.string.ping_monitor),
                         showBottomItems = true,
                     )
+
                 is TunnelSettings -> {
                     val tunnelName = globalState.tunnelNames[route.id]
+                    val tunnelIconUrl = globalState.tunnelIconUrls[route.id]
                     NavbarState(
                         topLeading = {
                             IconButton(onClick = { navController.pop() }) {
@@ -348,6 +376,25 @@ fun currentRouteAsNavbarState(
                         },
                         showBottomItems = true,
                         topTitle = tunnelName ?: "",
+                        topTitleContent = {
+                            Row {
+                                if (!tunnelIconUrl.isNullOrBlank()) {
+                                    DataIcon(
+                                        url = tunnelIconUrl,
+                                        size = 20.dp,
+                                        modifier = Modifier.align(Alignment.CenterVertically)
+                                    )
+
+                                    Spacer(Modifier.width(8.dp))
+                                }
+
+                                Text(
+                                    tunnelName ?: "",
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                )
+                            }
+                        },
                         topTrailing = {
                             Row {
                                 IconButton(
@@ -358,12 +405,16 @@ fun currentRouteAsNavbarState(
                                     Icon(Icons.Rounded.QrCode2, stringResource(R.string.show_qr))
                                 }
                                 IconButton(onClick = { navController.push(Config(route.id)) }) {
-                                    Icon(Icons.Rounded.Edit, stringResource(R.string.edit_tunnel))
+                                    Icon(
+                                        Icons.Rounded.Edit,
+                                        stringResource(R.string.edit_tunnel),
+                                    )
                                 }
                             }
                         },
                     )
                 }
+
                 Tunnels -> {
                     NavbarState(
                         topTitle = context.getString(R.string.tunnels),
@@ -371,6 +422,12 @@ fun currentRouteAsNavbarState(
                             when (globalState.selectedTunnelCount) {
                                 0 ->
                                     Row {
+                                        IconButton(onClick = { navController.push(FeedSubscriptions) }) {
+                                            Icon(
+                                                Icons.Rounded.RssFeed,
+                                                stringResource(R.string.subscriptions),
+                                            )
+                                        }
                                         IconButton(onClick = { navController.push(Sort) }) {
                                             Icon(
                                                 Icons.AutoMirrored.Rounded.Sort,
@@ -390,6 +447,7 @@ fun currentRouteAsNavbarState(
                                             )
                                         }
                                     }
+
                                 else ->
                                     Row {
                                         IconButton(
@@ -454,6 +512,7 @@ fun currentRouteAsNavbarState(
                         showBottomItems = true,
                     )
                 }
+
                 WifiDetectionMethod ->
                     NavbarState(
                         topLeading = {
@@ -467,6 +526,7 @@ fun currentRouteAsNavbarState(
                         topTitle = context.getString(R.string.wifi_detection_method),
                         showBottomItems = true,
                     )
+
                 Donate -> {
                     NavbarState(
                         topLeading = {
@@ -481,6 +541,7 @@ fun currentRouteAsNavbarState(
                         showBottomItems = true,
                     )
                 }
+
                 Addresses -> {
                     NavbarState(
                         topLeading = {
@@ -495,6 +556,7 @@ fun currentRouteAsNavbarState(
                         showBottomItems = true,
                     )
                 }
+
                 is WifiPreferences -> {
                     NavbarState(
                         topLeading = {
@@ -509,11 +571,13 @@ fun currentRouteAsNavbarState(
                         showBottomItems = true,
                     )
                 }
+
                 is PreferredTunnel -> {
                     val title =
                         when (route.tunnelNetwork) {
                             TunnelNetwork.MOBILE_DATA,
                             TunnelNetwork.ETHERNET -> context.getString(R.string.preferred_tunnel)
+
                             TunnelNetwork.WIFI -> context.getString(R.string.tunnel_mapping)
                         }
                     NavbarState(
@@ -529,6 +593,7 @@ fun currentRouteAsNavbarState(
                         showBottomItems = true,
                     )
                 }
+
                 PingTarget ->
                     NavbarState(
                         topLeading = {
@@ -542,6 +607,78 @@ fun currentRouteAsNavbarState(
                         topTitle = context.getString(R.string.ping_target),
                         showBottomItems = true,
                     )
+
+                FeedSubscriptions ->
+                    NavbarState(
+                        topLeading = {
+                            IconButton(onClick = { navController.pop() }) {
+                                Icon(
+                                    Icons.AutoMirrored.Rounded.ArrowBack,
+                                    stringResource(R.string.back),
+                                )
+                            }
+                        },
+                        topTitle = context.getString(R.string.subscriptions),
+                        topTrailing = {
+                            when (globalState.selectedSubscriptionCount) {
+                                0 ->
+                                    IconButton(onClick = {
+                                        sharedViewModel.postSideEffect(
+                                            LocalSideEffect.Modal.FeedAddSubscription
+                                        )
+                                    }) {
+                                        Icon(
+                                            Icons.Rounded.Add,
+                                            stringResource(R.string.add_subscription),
+                                        )
+                                    }
+
+                                else ->
+                                    Row {
+                                        IconButton(
+                                            onClick = {
+                                                sharedViewModel.postSideEffect(
+                                                    LocalSideEffect.Modal.FeedSelectAllSubscriptions
+                                                )
+                                            }
+                                        ) {
+                                            Icon(
+                                                Icons.Rounded.SelectAll,
+                                                stringResource(R.string.select_all),
+                                            )
+                                        }
+                                        IconButton(
+                                            onClick = {
+                                                sharedViewModel.postSideEffect(
+                                                    LocalSideEffect.Modal.FeedDeleteSubscriptions
+                                                )
+                                            }
+                                        ) {
+                                            Icon(
+                                                Icons.Rounded.Delete,
+                                                stringResource(R.string.delete),
+                                            )
+                                        }
+                                    }
+                            }
+                        },
+                        showBottomItems = true,
+                    )
+
+                is FeedSubscriptionDetails ->
+                    NavbarState(
+                        topLeading = {
+                            IconButton(onClick = { navController.pop() }) {
+                                Icon(
+                                    Icons.AutoMirrored.Rounded.ArrowBack,
+                                    stringResource(R.string.back),
+                                )
+                            }
+                        },
+                        topTitle = context.getString(R.string.subscriptions),
+                        showBottomItems = true,
+                    )
+
                 null -> NavbarState()
             }
         }

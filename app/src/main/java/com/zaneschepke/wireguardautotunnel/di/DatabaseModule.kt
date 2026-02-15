@@ -7,9 +7,7 @@ import com.zaneschepke.wireguardautotunnel.R
 import com.zaneschepke.wireguardautotunnel.data.AppDatabase
 import com.zaneschepke.wireguardautotunnel.data.DataStoreManager
 import com.zaneschepke.wireguardautotunnel.data.DatabaseCallback
-import com.zaneschepke.wireguardautotunnel.data.migrations.MIGRATION_23_24
-import com.zaneschepke.wireguardautotunnel.data.migrations.MIGRATION_25_26
-import com.zaneschepke.wireguardautotunnel.data.migrations.MIGRATION_28_29
+import com.zaneschepke.wireguardautotunnel.data.migrations.*
 import com.zaneschepke.wireguardautotunnel.data.repository.DataStoreAppStateRepository
 import com.zaneschepke.wireguardautotunnel.data.repository.InstalledAndroidPackageRepository
 import com.zaneschepke.wireguardautotunnel.data.repository.RoomAutoTunnelSettingsRepository
@@ -60,6 +58,8 @@ val databaseModule = module {
     single { get<AppDatabase>().monitoringSettingsDao() }
     single { get<AppDatabase>().proxySettingsDoa() }
     single { get<AppDatabase>().tunnelConfigDoa() }
+    single { get<AppDatabase>().feedSubscriptionDao() }
+    single { get<AppDatabase>().feedManagedTunnelDao() }
 
     single { DataStoreManager(androidContext(), get(named(Dispatcher.IO))) }
 

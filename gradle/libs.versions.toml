@@ -44,6 +44,8 @@ storage = "1.6.0"
 ktfmt = "0.25.0"
 licensee = "1.14.1"
 lifecycleViewmodelNavigation3 = "2.10.0"
+androidsvg = "1.4"
+kage = "0.3.0"
 
 [bundles]
 # Core AndroidX foundations
@@ -165,6 +167,7 @@ ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negoti
 ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktorClientCore" }
 ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktorClientCore" }
 ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktorClientCore" }
+ktor-client-sse = { module = "io.ktor:ktor-client-sse", version.ref = "ktorClientCore" }
 
 # icons
 material-icons-extended = { module = "androidx.compose.material:material-icons-extended", version.ref = "icons" }
@@ -193,6 +196,12 @@ amneziawg-android = { module = "com.zaneschepke:amneziawg-android", version.ref 
 # shizuku
 shizuku-api = { module = "dev.rikka.shizuku:api", version.ref = "shizuku" }
 shizuku-provider = { module = "dev.rikka.shizuku:provider", version.ref = "shizuku" }
+
+# svg
+androidsvg = { module = "com.caverock:androidsvg", version.ref = "androidsvg" }
+
+# age encryption
+kage = { module = "com.github.android-password-store:kage", version.ref = "kage" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "androidGradlePlugin" }

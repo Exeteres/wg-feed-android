@@ -84,4 +84,7 @@ interface TunnelConfigDao {
 
     @Query("SELECT * FROM tunnel_config WHERE name = :globalName LIMIT 1")
     fun getGlobalTunnel(globalName: String = TunnelConfig.GLOBAL_CONFIG_NAME): Flow<TunnelConfig?>
+
+    @Query("SELECT * FROM tunnel_config WHERE feed_subscription_id = :subscriptionId")
+    suspend fun getByFeedSubscriptionId(subscriptionId: Int): List<TunnelConfig>
 }

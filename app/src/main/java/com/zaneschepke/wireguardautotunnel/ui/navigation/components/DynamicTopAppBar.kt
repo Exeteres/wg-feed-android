@@ -20,7 +20,10 @@ fun DynamicTopAppBar(navBarState: NavbarState, modifier: Modifier = Modifier) {
         colors = TopAppBarDefaults.topAppBarColors().copy(Color.Transparent),
         navigationIcon = { navBarState.topLeading?.invoke() },
         title = {
-            navBarState.topTitle?.let { Text(it, maxLines = 1, overflow = TextOverflow.Ellipsis) }
+            navBarState.topTitleContent?.invoke()
+                ?: navBarState.topTitle?.let {
+                    Text(it, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                }
         },
         actions = { navBarState.topTrailing?.invoke() },
     )

@@ -10,12 +10,14 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.CallSplit
 import androidx.compose.material.icons.automirrored.outlined.ViewQuilt
 import androidx.compose.material.icons.outlined.Android
+import androidx.compose.material.icons.outlined.DynamicFeed
 import androidx.compose.material.icons.outlined.Dns
 import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material.icons.outlined.NetworkPing
 import androidx.compose.material.icons.outlined.Pin
 import androidx.compose.material.icons.outlined.SettingsBackupRestore
 import androidx.compose.material.icons.outlined.ViewHeadline
+import androidx.compose.material.icons.rounded.RssFeed
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -198,6 +200,11 @@ fun SettingsScreen(
                 leading = { Icon(Icons.Outlined.Android, null) },
                 title = stringResource(R.string.android_integrations),
                 onClick = { navController.push(Route.AndroidIntegrations) },
+            )
+            SurfaceRow(
+                leading = { Icon(Icons.Rounded.RssFeed, contentDescription = null) },
+                title = stringResource(R.string.subscriptions),
+                onClick = { navController.push(Route.FeedSubscriptions) },
             )
         }
         Column {

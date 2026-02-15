@@ -20,6 +20,11 @@ sealed class LocalSideEffect {
         data object DeleteTunnels : Modal()
 
         data object SelectTunnel : Modal()
+
+        // wg-feed
+        data object FeedAddSubscription : Modal()
+        data object FeedSelectAllSubscriptions : Modal()
+        data object FeedDeleteSubscriptions : Modal()
     }
 
     sealed class SelectedTunnels : LocalSideEffect() {

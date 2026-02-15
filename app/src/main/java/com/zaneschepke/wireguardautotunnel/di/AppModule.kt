@@ -27,6 +27,10 @@ import com.zaneschepke.wireguardautotunnel.viewmodel.SharedAppViewModel
 import com.zaneschepke.wireguardautotunnel.viewmodel.SplitTunnelViewModel
 import com.zaneschepke.wireguardautotunnel.viewmodel.SupportViewModel
 import com.zaneschepke.wireguardautotunnel.viewmodel.TunnelViewModel
+import com.zaneschepke.wireguardautotunnel.wgfeed.domain.repository.SelectedSubscriptionsRepository
+import com.zaneschepke.wireguardautotunnel.wgfeed.ui.WgFeedSubscriptionAddViewModel
+import com.zaneschepke.wireguardautotunnel.wgfeed.ui.WgFeedSubscriptionDetailsViewModel
+import com.zaneschepke.wireguardautotunnel.wgfeed.ui.WgFeedSubscriptionsViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
@@ -74,6 +78,9 @@ val appModule = module {
         scopedOf(::SelectedTunnelsRepository)
     }
 
+    // wg-feed
+    singleOf(::SelectedSubscriptionsRepository)
+
     single { NetworkUtils(get(named(Dispatcher.IO))) }
 
     viewModelOf(::AutoTunnelViewModel)
@@ -89,4 +96,11 @@ val appModule = module {
     viewModel { (id: Int) -> SplitTunnelViewModel(get(), get(), get(), id) }
     viewModel { SupportViewModel(get(), get(named(Dispatcher.MAIN)), get()) }
     viewModel { (id: Int) -> TunnelViewModel(get(), get(), id) }
+
+    // wg-feed
+    viewModelOf(::WgFeedSubscriptionsViewModel)
+    viewModelOf(::WgFeedSubscriptionAddViewModel)
+    viewModel { (subscriptionId: Int) ->
+        WgFeedSubscriptionDetailsViewModel(subscriptionId, get(), get(), get(), get())
+    }
 }

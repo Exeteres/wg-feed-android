@@ -4,6 +4,7 @@ import androidx.room.TypeConverter
 import com.zaneschepke.wireguardautotunnel.data.model.AppMode
 import com.zaneschepke.wireguardautotunnel.data.model.DnsProtocol
 import com.zaneschepke.wireguardautotunnel.data.model.WifiDetectionMethod
+import com.zaneschepke.wireguardautotunnel.wgfeed.data.entity.FeedSyncMode
 import kotlinx.serialization.json.Json
 
 class DatabaseConverters {
@@ -64,4 +65,10 @@ class DatabaseConverters {
     @TypeConverter fun toDnsProtocol(value: Int): DnsProtocol = DnsProtocol.fromValue(value)
 
     @TypeConverter fun fromDnsProtocol(mode: DnsProtocol): Int = mode.value
+
+    @TypeConverter
+    fun toFeedSyncMode(value: Int): FeedSyncMode = FeedSyncMode.entries[value]
+
+    @TypeConverter
+    fun fromFeedSyncMode(mode: FeedSyncMode): Int = mode.ordinal
 }

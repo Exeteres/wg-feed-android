@@ -56,16 +56,20 @@ fun ConfigScreen(
     val isTunnelNameTaken by
         remember(tunnelName) { derivedStateOf { uiState.unavailableNames.contains(tunnelName) } }
 
+    val isReadOnly = uiState.tunnel?.isReadOnly == true
+
     sharedViewModel.collectSideEffect { sideEffect ->
-        if (sideEffect is LocalSideEffect.SaveChanges)
+        if (sideEffect is LocalSideEffect.SaveChanges) {
+            if (isReadOnly) return@collectSideEffect
             if (uiState.isRunning) viewModel.setShowSaveModal(true)
             else viewModel.saveConfigProxy(configProxy, tunnelName)
+        }
     }
 
     if (uiState.showSaveModal) {
         InfoDialog(
             onDismiss = { viewModel.setShowSaveModal(false) },
-            onAttest = { viewModel.saveConfigProxy(configProxy, tunnelName) },
+            onAttest = { if (!isReadOnly) viewModel.saveConfigProxy(configProxy, tunnelName) },
             title = stringResource(R.string.save_changes),
             body = {
                 Text(
@@ -92,50 +96,56 @@ fun ConfigScreen(
             uiState.isRunning,
             tunnelName,
             isTunnelNameTaken,
-            onInterfaceChange = { configProxy = configProxy.copy(`interface` = it) },
-            onTunnelNameChange = { tunnelName = it },
+            onInterfaceChange = { if (!isReadOnly) configProxy = configProxy.copy(`interface` = it) },
+            onTunnelNameChange = { if (!isReadOnly) tunnelName = it },
             onMimicQuic = {
-                configProxy = configProxy.copy(`interface` = configProxy.`interface`.setQuicMimic())
+                if (!isReadOnly)
+                    configProxy = configProxy.copy(`interface` = configProxy.`interface`.setQuicMimic())
             },
             onMimicDns = {
-                configProxy = configProxy.copy(`interface` = configProxy.`interface`.setDnsMimic())
+                if (!isReadOnly)
+                    configProxy = configProxy.copy(`interface` = configProxy.`interface`.setDnsMimic())
             },
             onMimicSip = {
-                configProxy = configProxy.copy(`interface` = configProxy.`interface`.setSipMimic())
+                if (!isReadOnly)
+                    configProxy = configProxy.copy(`interface` = configProxy.`interface`.setSipMimic())
             },
         )
         if (!isGlobalConfig)
             PeersSection(
                 configProxy,
                 onRemove = {
-                    configProxy =
-                        configProxy.copy(
-                            peers = configProxy.peers.toMutableList().apply { removeAt(it) }
-                        )
+                    if (!isReadOnly)
+                        configProxy =
+                            configProxy.copy(
+                                peers = configProxy.peers.toMutableList().apply { removeAt(it) }
+                            )
                 },
                 onToggleLan = { index ->
-                    configProxy =
-                        configProxy.copy(
-                            peers =
-                                configProxy.peers.toMutableList().apply {
-                                    val peer = get(index)
-                                    val updated =
-                                        if (peer.isLanExcluded()) peer.includeLan()
-                                        else peer.excludeLan()
-                                    set(index, updated)
-                                }
-                        )
+                    if (!isReadOnly)
+                        configProxy =
+                            configProxy.copy(
+                                peers =
+                                    configProxy.peers.toMutableList().apply {
+                                        val peer = get(index)
+                                        val updated =
+                                            if (peer.isLanExcluded()) peer.includeLan()
+                                            else peer.excludeLan()
+                                        set(index, updated)
+                                    }
+                            )
                 },
                 onUpdatePeer = { peer, index ->
-                    configProxy =
-                        configProxy.copy(
-                            peers = configProxy.peers.toMutableList().apply { set(index, peer) }
-                        )
+                    if (!isReadOnly)
+                        configProxy =
+                            configProxy.copy(
+                                peers = configProxy.peers.toMutableList().apply { set(index, peer) }
+                            )
                 },
             )
         if (!isGlobalConfig)
             AddPeerButton {
-                configProxy = configProxy.copy(peers = configProxy.peers + PeerProxy())
+                if (!isReadOnly) configProxy = configProxy.copy(peers = configProxy.peers + PeerProxy())
             }
     }
 }

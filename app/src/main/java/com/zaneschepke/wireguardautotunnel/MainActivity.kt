@@ -106,6 +106,8 @@ import com.zaneschepke.wireguardautotunnel.ui.screens.tunnels.config.ConfigScree
 import com.zaneschepke.wireguardautotunnel.ui.screens.tunnels.settings.TunnelSettingsScreen
 import com.zaneschepke.wireguardautotunnel.ui.screens.tunnels.sort.SortScreen
 import com.zaneschepke.wireguardautotunnel.ui.screens.tunnels.splittunnel.SplitTunnelScreen
+import com.zaneschepke.wireguardautotunnel.wgfeed.ui.screens.WgFeedSubscriptionDetailsScreen
+import com.zaneschepke.wireguardautotunnel.wgfeed.ui.screens.WgFeedSubscriptionsScreen
 import com.zaneschepke.wireguardautotunnel.ui.theme.AlertRed
 import com.zaneschepke.wireguardautotunnel.ui.theme.OffWhite
 import com.zaneschepke.wireguardautotunnel.ui.theme.WireguardAutoTunnelTheme
@@ -267,11 +269,11 @@ class MainActivity : AppCompatActivity() {
                     )
 
                     val annotatedMessage = buildAnnotatedString {
-                        append(context.getString(R.string.donation_prompt_prefix))
+                        append(stringResource(R.string.donation_prompt_prefix))
                         append(" ")
                         withLink(
                             LinkAnnotation.Clickable(
-                                tag = context.getString(R.string.support),
+                                tag = stringResource(R.string.support),
                                 styles =
                                     TextLinkStyles(
                                         style =
@@ -294,10 +296,10 @@ class MainActivity : AppCompatActivity() {
                                 navController.push(Route.Donate)
                             }
                         ) {
-                            append(context.getString(R.string.donation_prompt_link))
+                            append(stringResource(R.string.donation_prompt_link))
                         }
                         append(" ")
-                        append(context.getString(R.string.donation_prompt_suffix))
+                        append(stringResource(R.string.donation_prompt_suffix))
                     }
 
                     LaunchedEffect(Unit) {
@@ -324,12 +326,12 @@ class MainActivity : AppCompatActivity() {
                             derivedStateOf { Tab.fromRoute(currentRoute ?: Route.Tunnels) }
                         }
                         val navState by
-                            currentRouteAsNavbarState(
-                                uiState,
-                                viewModel,
-                                currentRoute,
-                                navController,
-                            )
+                        currentRouteAsNavbarState(
+                            uiState,
+                            viewModel,
+                            currentRoute,
+                            navController,
+                        )
 
                         Box(modifier = Modifier.fillMaxSize()) {
                             if (uiState.appMode == AppMode.LOCK_DOWN) {
@@ -338,14 +340,17 @@ class MainActivity : AppCompatActivity() {
                                         .uppercase(Locale.current.platformLocale),
                                     OffWhite,
                                     AlertRed,
-                                    modifier = Modifier.fillMaxWidth().zIndex(2f),
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .zIndex(2f),
                                 )
                             }
                             Scaffold(
                                 snackbarHost = {
                                     snackbarState.SnackbarHost(
                                         modifier =
-                                            Modifier.align(Alignment.BottomCenter)
+                                            Modifier
+                                                .align(Alignment.BottomCenter)
                                                 .padding(
                                                     bottom =
                                                         if (LocalIsAndroidTV.current) 120.dp
@@ -380,7 +385,8 @@ class MainActivity : AppCompatActivity() {
                             ) { padding ->
                                 Column(
                                     modifier =
-                                        Modifier.fillMaxSize()
+                                        Modifier
+                                            .fillMaxSize()
                                             .background(MaterialTheme.colorScheme.surface)
                                             .padding(
                                                 top = padding.calculateTopPadding().plus(8.dp),
@@ -401,20 +407,20 @@ class MainActivity : AppCompatActivity() {
                                             if (initialIndex != targetIndex) {
                                                 val dir = if (targetIndex > initialIndex) 1 else -1
                                                 (slideInHorizontally { dir * it } +
-                                                    fadeIn()) togetherWith
-                                                    (slideOutHorizontally { dir * -it } + fadeOut())
+                                                        fadeIn()) togetherWith
+                                                        (slideOutHorizontally { dir * -it } + fadeOut())
                                             } else {
                                                 (slideInHorizontally { it } + fadeIn()) togetherWith
-                                                    (slideOutHorizontally { -it } + fadeOut())
+                                                        (slideOutHorizontally { -it } + fadeOut())
                                             }
                                         },
                                         popTransitionSpec = {
                                             (slideInHorizontally { -it } + fadeIn()) togetherWith
-                                                (slideOutHorizontally { it } + fadeOut())
+                                                    (slideOutHorizontally { it } + fadeOut())
                                         },
                                         predictivePopTransitionSpec = {
                                             (slideInHorizontally { -it } + fadeIn()) togetherWith
-                                                (slideOutHorizontally { it } + fadeOut())
+                                                    (slideOutHorizontally { it } + fadeOut())
                                         },
                                         entryDecorators =
                                             listOf(
@@ -503,6 +509,14 @@ class MainActivity : AppCompatActivity() {
                                                     PreferredTunnelScreen(key.tunnelNetwork)
                                                 }
                                                 entry<Route.PingTarget> { PingTargetScreen() }
+
+                                                // wg-feed
+                                                entry<Route.FeedSubscriptions> {
+                                                    WgFeedSubscriptionsScreen()
+                                                }
+                                                entry<Route.FeedSubscriptionDetails> { key ->
+                                                    WgFeedSubscriptionDetailsScreen(subscriptionId = key.subscriptionId)
+                                                }
                                             },
                                     )
                                 }

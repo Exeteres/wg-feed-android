@@ -75,6 +75,11 @@ sealed class Route : NavKey {
     @Keep @Serializable data class PreferredTunnel(val tunnelNetwork: TunnelNetwork) : Route()
 
     @Keep @Serializable data object PingTarget : Route()
+
+    // wg-feed
+    @Keep @Serializable data object FeedSubscriptions : Route()
+
+    @Keep @Serializable data class FeedSubscriptionDetails(val subscriptionId: Int) : Route()
 }
 
 @Serializable
@@ -129,7 +134,9 @@ enum class Tab(
                 Route.Display,
                 Route.PingTarget,
                 is Route.ConfigGlobal,
-                Route.Logs -> SETTINGS
+                Route.Logs,
+                Route.FeedSubscriptions,
+                is Route.FeedSubscriptionDetails -> SETTINGS
                 is Route.Support,
                 Route.License,
                 Route.Donate,

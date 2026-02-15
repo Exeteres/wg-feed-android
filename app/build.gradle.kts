@@ -254,6 +254,12 @@ dependencies {
     implementation(libs.koin.androidx.navigation)
     implementation(libs.koin.lazy)
     implementation(libs.koin.worker)
+
+    // svg (data:image/svg+xml)
+    implementation(libs.androidsvg)
+
+    // age encryption
+    implementation(libs.kage)
 }
 
 tasks.register<Copy>("copyLicenseeJsonToAssets") {

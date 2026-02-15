@@ -46,7 +46,7 @@ fun SelectTunnelModal(
                 ) {
                     items(tunnels, key = { it.id }) { tunnel ->
                         SurfaceRow(
-                            title = tunnel.name,
+                            title = tunnel.displayTitle ?: tunnel.name,
                             trailing =
                                 if (selectedTunnel?.id == tunnel.id) {
                                     {

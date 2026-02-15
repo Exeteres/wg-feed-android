@@ -17,9 +17,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -35,13 +32,10 @@ import com.zaneschepke.wireguardautotunnel.ui.common.button.ThemedSwitch
 import com.zaneschepke.wireguardautotunnel.ui.common.label.GroupLabel
 import com.zaneschepke.wireguardautotunnel.ui.common.text.DescriptionText
 import com.zaneschepke.wireguardautotunnel.ui.navigation.Route
-import com.zaneschepke.wireguardautotunnel.ui.screens.tunnels.settings.components.QrCodeDialog
-import com.zaneschepke.wireguardautotunnel.ui.sideeffect.LocalSideEffect
 import com.zaneschepke.wireguardautotunnel.ui.theme.Disabled
 import com.zaneschepke.wireguardautotunnel.viewmodel.SharedAppViewModel
 import com.zaneschepke.wireguardautotunnel.viewmodel.TunnelViewModel
 import org.koin.compose.viewmodel.koinActivityViewModel
-import org.orbitmvi.orbit.compose.collectSideEffect
 
 @Composable
 fun TunnelSettingsScreen(
@@ -55,28 +49,37 @@ fun TunnelSettingsScreen(
     val tunnelState by viewModel.container.stateFlow.collectAsStateWithLifecycle()
 
     if (tunnelState.isLoading) return
+
     val tunnel = tunnelState.tunnel ?: return
-
-    var showQrModal by rememberSaveable { mutableStateOf(false) }
-
-    sharedViewModel.collectSideEffect { sideEffect ->
-        if (sideEffect is LocalSideEffect.Modal.QR) showQrModal = true
-    }
-
-    if (showQrModal) {
-        QrCodeDialog(tunnelConfig = tunnel, onDismiss = { showQrModal = false })
-    }
 
     Column(
         horizontalAlignment = Alignment.Start,
         verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.Top),
-        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState()),
     ) {
+
+        tunnel.displayDescription?.takeIf { it.isNotBlank() }?.let { desc ->
+            Column {
+                GroupLabel(
+                    stringResource(R.string.tunnel_description),
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                )
+                Text(
+                    text = desc,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                )
+            }
+        }
+
         Column {
             GroupLabel(
                 stringResource(R.string.general),
                 modifier = Modifier.padding(horizontal = 16.dp),
             )
+
             SurfaceRow(
                 leading = { Icon(Icons.Outlined.Star, contentDescription = null) },
                 title = stringResource(R.string.primary_tunnel),
@@ -120,7 +123,9 @@ fun TunnelSettingsScreen(
                     } else null,
                 onClick = { navController.push(Route.SplitTunnel(id = tunnel.id)) },
             )
+
         }
+
         Column {
             GroupLabel(
                 stringResource(R.string.other),

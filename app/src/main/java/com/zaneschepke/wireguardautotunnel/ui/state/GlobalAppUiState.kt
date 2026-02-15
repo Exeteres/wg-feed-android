@@ -15,7 +15,10 @@ data class GlobalAppUiState(
     val isBatteryOptimizationShown: Boolean = false,
     val isAutoTunnelActive: Boolean = false,
     val tunnelNames: Map<Int, String> = emptyMap(),
+    val tunnelIconUrls: Map<Int, String?> = emptyMap(),
+    val readOnlyTunnelIds: Set<Int> = emptySet(),
     val selectedTunnelCount: Int = 0,
+    val selectedSubscriptionCount: Int = 0,
     val alreadyDonated: Boolean = false,
     val isPinVerified: Boolean = false,
 )

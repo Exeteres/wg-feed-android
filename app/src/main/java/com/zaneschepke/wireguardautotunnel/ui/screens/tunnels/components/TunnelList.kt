@@ -3,7 +3,9 @@ package com.zaneschepke.wireguardautotunnel.ui.screens.tunnels.components
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.gestures.ScrollableDefaults
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -22,12 +24,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.ui.draw.clip
 import com.zaneschepke.wireguardautotunnel.R
 import com.zaneschepke.wireguardautotunnel.domain.state.TunnelState
 import com.zaneschepke.wireguardautotunnel.ui.LocalNavController
 import com.zaneschepke.wireguardautotunnel.ui.common.button.SurfaceRow
 import com.zaneschepke.wireguardautotunnel.ui.common.button.SwitchWithDivider
+import com.zaneschepke.wireguardautotunnel.ui.common.icon.DataIcon
 import com.zaneschepke.wireguardautotunnel.ui.navigation.Route
 import com.zaneschepke.wireguardautotunnel.ui.state.TunnelsUiState
 import com.zaneschepke.wireguardautotunnel.util.extensions.asColor
@@ -89,17 +98,67 @@ fun TunnelList(
                     mutableStateOf(tunnelState.health().asColor())
                 }
 
+            val isActiveNow = tunnelState.status.isUpOrStarting()
+            val showRestartRequired = isActiveNow && tunnel.isRestartRequired
+
+            val titleText = tunnel.displayTitle ?: tunnel.name
+            val iconUrl = tunnel.displayIconUrl
+
+            val subscriptionId = tunnel.feedSubscriptionId
+            val subscription = if (subscriptionId != null) uiState.subscriptionsById[subscriptionId] else null
+            val manualMode = subscription?.ignoreServerState == true
+
+            val title =
+                AnnotatedString(
+                    text = titleText,
+                )
+
+            val mapping = uiState.managedTunnelsByConfigId[tunnel.id]
+            val isForcedLocked = mapping?.isForced == true && !manualMode
+
             SurfaceRow(
                 modifier = Modifier.animateItem(),
                 leading = {
-                    Icon(
-                        Icons.Rounded.Circle,
-                        contentDescription = stringResource(R.string.tunnel_monitoring),
-                        tint = leadingIconColor,
-                        modifier = Modifier.size(14.dp),
-                    )
+                    Box(contentAlignment = Alignment.TopEnd) {
+                        if (!iconUrl.isNullOrBlank()) {
+                            DataIcon(url = iconUrl, size = 22.dp)
+                        } else {
+                            Icon(
+                                Icons.Rounded.Circle,
+                                contentDescription = stringResource(R.string.tunnel_monitoring),
+                                tint = leadingIconColor,
+                                modifier = Modifier.size(14.dp),
+                            )
+                        }
+
+                        if (showRestartRequired) {
+                            Text(
+                                text = "!",
+                                color = MaterialTheme.colorScheme.onError,
+                                style = MaterialTheme.typography.labelSmall,
+                                modifier =
+                                    Modifier
+                                        .padding(0.dp)
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .background(MaterialTheme.colorScheme.error)
+                                        .padding(horizontal = 5.dp, vertical = 1.dp),
+                            )
+                        }
+                    }
                 },
-                title = tunnel.name,
+                title = title,
+                description =
+                    if (showRestartRequired) {
+                        {
+                            Text(
+                                text = stringResource(R.string.tunnel_restart_required_message),
+                                color = MaterialTheme.colorScheme.error,
+                                style = MaterialTheme.typography.bodySmall,
+                            )
+                        }
+                    } else {
+                        null
+                    },
                 onClick = {
                     if (uiState.selectedTunnels.isNotEmpty()) {
                         viewModel.toggleSelectedTunnel(tunnel.id)
@@ -123,12 +182,14 @@ fun TunnelList(
                 onLongClick = { viewModel.toggleSelectedTunnel(tunnel.id) },
                 trailing = { modifier ->
                     SwitchWithDivider(
-                        checked = tunnelState.status.isUpOrStarting(),
+                        checked = isActiveNow,
                         onClick = { checked ->
+                            if (isForcedLocked) return@SwitchWithDivider
                             if (checked) viewModel.startTunnel(tunnel)
                             else viewModel.stopTunnel(tunnel)
                         },
                         modifier = modifier,
+                        enabled = !isForcedLocked,
                     )
                 },
             )

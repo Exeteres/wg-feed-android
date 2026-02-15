@@ -5,6 +5,10 @@ import androidx.room.migration.AutoMigrationSpec
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.zaneschepke.wireguardautotunnel.data.dao.*
 import com.zaneschepke.wireguardautotunnel.data.entity.*
+import com.zaneschepke.wireguardautotunnel.wgfeed.data.dao.FeedManagedTunnelDao
+import com.zaneschepke.wireguardautotunnel.wgfeed.data.dao.FeedSubscriptionDao
+import com.zaneschepke.wireguardautotunnel.wgfeed.data.entity.FeedManagedTunnelEntity
+import com.zaneschepke.wireguardautotunnel.wgfeed.data.entity.FeedSubscriptionEntity
 
 @Database(
     entities =
@@ -16,8 +20,10 @@ import com.zaneschepke.wireguardautotunnel.data.entity.*
             MonitoringSettings::class,
             DnsSettings::class,
             LockdownSettings::class,
+            FeedSubscriptionEntity::class,
+            FeedManagedTunnelEntity::class,
         ],
-    version = 29,
+    version = 30,
     autoMigrations =
         [
             AutoMigration(from = 1, to = 2),
@@ -45,6 +51,7 @@ import com.zaneschepke.wireguardautotunnel.data.entity.*
             AutoMigration(from = 24, to = 25),
             AutoMigration(from = 26, to = 27, spec = GlobalsMigration::class),
             AutoMigration(from = 27, to = 28, spec = DonationMigration::class),
+            AutoMigration(from = 29, to = 30),
         ],
     exportSchema = true,
 )
@@ -63,6 +70,10 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun lockdownSettingsDao(): LockdownSettingsDao
 
     abstract fun dnsSettingsDao(): DnsSettingsDao
+
+    abstract fun feedSubscriptionDao(): FeedSubscriptionDao
+
+    abstract fun feedManagedTunnelDao(): FeedManagedTunnelDao
 }
 
 @DeleteColumn(tableName = "Settings", columnName = "default_tunnel")
@@ -129,3 +140,4 @@ class GlobalsMigration : AutoMigrationSpec
 
 @DeleteColumn(tableName = "general_settings", columnName = "custom_split_packages")
 class DonationMigration : AutoMigrationSpec
+

@@ -15,6 +15,9 @@ import com.zaneschepke.wireguardautotunnel.domain.repository.GeneralSettingRepos
 import com.zaneschepke.wireguardautotunnel.domain.repository.GlobalEffectRepository
 import com.zaneschepke.wireguardautotunnel.domain.repository.MonitoringSettingsRepository
 import com.zaneschepke.wireguardautotunnel.domain.repository.SelectedTunnelsRepository
+import com.zaneschepke.wireguardautotunnel.wgfeed.data.dao.FeedSubscriptionDao
+import com.zaneschepke.wireguardautotunnel.wgfeed.data.dao.FeedManagedTunnelDao
+import com.zaneschepke.wireguardautotunnel.wgfeed.domain.repository.SelectedSubscriptionsRepository
 import com.zaneschepke.wireguardautotunnel.domain.repository.TunnelRepository
 import com.zaneschepke.wireguardautotunnel.domain.sideeffect.GlobalSideEffect
 import com.zaneschepke.wireguardautotunnel.ui.sideeffect.LocalSideEffect
@@ -41,7 +44,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.plus
+import com.zaneschepke.wireguardautotunnel.util.extensions.combine
 import org.amnezia.awg.config.BadConfigException
 import org.orbitmvi.orbit.ContainerHost
 import org.orbitmvi.orbit.viewmodel.container
@@ -56,6 +59,9 @@ class SharedAppViewModel(
     private val tunnelRepository: TunnelRepository,
     private val settingsRepository: GeneralSettingRepository,
     private val selectedTunnelsRepository: SelectedTunnelsRepository,
+    private val selectedSubscriptionsRepository: SelectedSubscriptionsRepository,
+    private val subscriptionDao: FeedSubscriptionDao,
+    private val managedTunnelDao: FeedManagedTunnelDao,
     monitoringSettingsRepository: MonitoringSettingsRepository,
     private val rootShellUtils: RootShellUtils,
     private val httpClient: HttpClient,
@@ -66,17 +72,26 @@ class SharedAppViewModel(
 
     val tunnelsUiState =
         combine(
-                tunnelRepository.userTunnelsFlow,
+                combine(
+                    tunnelRepository.userTunnelsFlow,
+                    subscriptionDao.getAllFlow(),
+                    managedTunnelDao.getAllFlow(),
+                ) { tunnels, subs, managed ->
+                    Triple(tunnels, subs, managed)
+                },
                 monitoringSettingsRepository.flow,
                 tunnelManager.activeTunnels,
                 selectedTunnelsRepository.flow,
-            ) { tunnels, monitoringSettings, activeTuns, selectedTuns ->
+            ) { triple, monitoringSettings, activeTuns, selectedTuns ->
+                val (tunnels, subs, managed) = triple
                 TunnelsUiState(
                     tunnels = tunnels,
                     isPingEnabled = monitoringSettings.isPingEnabled,
                     showPingStats = monitoringSettings.showDetailedPingStats,
                     activeTunnels = activeTuns,
                     selectedTunnels = selectedTuns,
+                    subscriptionsById = subs.associateBy { it.id },
+                    managedTunnelsByConfigId = managed.associateBy { it.tunnelConfigId },
                     isLoading = false,
                 )
             }
@@ -88,35 +103,65 @@ class SharedAppViewModel(
             buildSettings = { repeatOnSubscribedStopTimeout = 5_000L },
         ) {
             intent {
+                val tunNamesFlow =
+                    tunnelRepository.userTunnelsFlow
+                        .map { tuns -> tuns.associate { it.id to (it.displayTitle ?: it.name) } }
+
+                val tunIconsFlow =
+                    tunnelRepository.userTunnelsFlow
+                        .map { tuns -> tuns.associate { it.id to it.displayIconUrl } }
+
+                val readOnlyIdsFlow =
+                    tunnelRepository.userTunnelsFlow
+                        .map { tuns -> tuns.filter { it.isReadOnly }.map { it.id }.toSet() }
+                        .distinctUntilChanged()
+
+                val autoTunnelActiveFlow =
+                    serviceManager.autoTunnelService.map { it != null }.distinctUntilChanged()
+
+                val selectionTunFlow =
+                    tunnelsUiState
+                        .map { Pair(it.isLoading, it.selectedTunnels.size) }
+                        .distinctUntilChanged()
+
+                val selectionSubFlow =
+                    selectedSubscriptionsRepository.flow
+                        .map { it.size }
+                        .distinctUntilChanged()
+
                 combine(
-                        tunnelRepository.userTunnelsFlow
-                            .map { tuns -> tuns.associate { it.id to it.name } }
-                            .distinctUntilChanged(),
-                        serviceManager.autoTunnelService.map { it != null }.distinctUntilChanged(),
-                        settingsRepository.flow,
-                        tunnelsUiState
-                            .map { Pair(it.isLoading, it.selectedTunnels.size) }
-                            .distinctUntilChanged(),
-                        appStateRepository.flow,
-                    ) { tunNames, autoTunnelActive, settings, (loading, selectedTunCount), appState
-                        ->
-                        state.copy(
-                            theme = settings.theme,
-                            appMode = settings.appMode,
-                            locale = settings.locale ?: LocaleUtil.OPTION_PHONE_LANGUAGE,
-                            tunnelNames = tunNames,
-                            alreadyDonated = settings.alreadyDonated,
-                            isLocationDisclosureShown = appState.isLocationDisclosureShown,
-                            isBatteryOptimizationShown = appState.isBatteryOptimizationDisableShown,
-                            shouldShowDonationSnackbar = appState.shouldShowDonationSnackbar,
-                            selectedTunnelCount = selectedTunCount,
-                            pinLockEnabled = settings.isPinLockEnabled,
-                            isAutoTunnelActive = autoTunnelActive,
-                            isAppLoaded = !loading,
-                        )
-                    }
+                    tunNamesFlow,
+                    tunIconsFlow,
+                    readOnlyIdsFlow,
+                    autoTunnelActiveFlow,
+                    selectionTunFlow,
+                    selectionSubFlow,
+                    settingsRepository.flow,
+                    appStateRepository.flow,
+                ) { tunNames, tunIcons, readOnlyIds, autoTunnelActive, loadingAndSelectedTunCount, selectedSubCount, settings, appState ->
+                    val loading = loadingAndSelectedTunCount.first
+                    val selectedTunCount = loadingAndSelectedTunCount.second
+
+                    state.copy(
+                        theme = settings.theme,
+                        appMode = settings.appMode,
+                        locale = settings.locale ?: LocaleUtil.OPTION_PHONE_LANGUAGE,
+                        tunnelNames = tunNames,
+                        tunnelIconUrls = tunIcons,
+                        readOnlyTunnelIds = readOnlyIds,
+                        alreadyDonated = settings.alreadyDonated,
+                        isLocationDisclosureShown = appState.isLocationDisclosureShown,
+                        isBatteryOptimizationShown = appState.isBatteryOptimizationDisableShown,
+                        shouldShowDonationSnackbar = appState.shouldShowDonationSnackbar,
+                        selectedTunnelCount = selectedTunCount,
+                        selectedSubscriptionCount = selectedSubCount,
+                        pinLockEnabled = settings.isPinLockEnabled,
+                        isAutoTunnelActive = autoTunnelActive,
+                        isAppLoaded = !loading,
+                    )
+                }
                     .collect { newState -> reduce { newState } }
-            }
+             }
 
             intent {
                 tunnelManager.errorEvents.collect { (tunnel, message) ->
@@ -389,3 +434,4 @@ class SharedAppViewModel(
             } else null
         }
 }
+

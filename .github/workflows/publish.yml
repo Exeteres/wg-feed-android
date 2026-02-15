@@ -1,25 +1,13 @@
 name: publish
 permissions:
   contents: write
-  packages: write
 
 on:
   push:
     tags:
-      - '[0-9]*.[0-9]*.[0-9]*'
+      - '[0-9]*.[0-9]*.[0-9]*-feed.[0-9]*'
   workflow_dispatch:
     inputs:
-      track:
-        type: choice
-        description: "Google Play release track"
-        options:
-          - none
-          - internal
-          - alpha
-          - beta
-          - production
-        default: none
-        required: true
       release_type:
         type: choice
         description: "GitHub release type"
@@ -31,7 +19,7 @@ on:
       tag_name:
         description: "Tag name for release"
         required: false
-        default: 1.1.1
+        default: 1.1.1-feed.1
   workflow_call:
     inputs:
       flavor:
@@ -41,18 +29,6 @@ on:
         default: standalone
 
 jobs:
-
-  build-fdroid:
-    if: >-
-      ${{ 
-        github.event_name == 'push' || 
-        inputs.release_type != 'none' 
-      }}
-    uses: ./.github/workflows/build.yml
-    secrets: inherit
-    with:
-      build_type: ${{ github.event_name == 'push' && 'release' || inputs.release_type }}
-      flavor: fdroid
 
   build-standalone:
     if: >-
@@ -73,7 +49,6 @@ jobs:
         inputs.release_type != 'none' 
       }}
     needs:
-    - build-fdroid
     - build-standalone
     name: publish-github
     runs-on: ubuntu-latest
@@ -168,76 +143,4 @@ jobs:
           files: |
             ${{ github.workspace }}/temp/**/*.apk
         env:
-          GITHUB_TOKEN: ${{ secrets.PAT }}
-
-  publish-fdroid-public:
-    runs-on: ubuntu-latest
-    if: >-
-      ${{ 
-        github.event_name == 'push' || 
-        inputs.release_type != 'none' 
-      }}
-    needs:
-      - publish-github
-    steps:
-      - name: Dispatch update for fdroid repo
-        uses: peter-evans/repository-dispatch@v4
-        with:
-          token: ${{ secrets.PAT }}
-          repository: wgtunnel/fdroid
-          event-type: fdroid-update
-
-  publish-play:
-    if: ${{ github.event_name == 'push' || inputs.track != 'none' }}
-    name: Publish to Google Play
-    runs-on: ubuntu-latest
-
-    env:
-      SIGNING_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
-      SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
-      SIGNING_STORE_PASSWORD: ${{ secrets.SIGNING_STORE_PASSWORD }}
-      KEY_STORE_FILE: 'android_keystore.jks'
-      KEY_STORE_LOCATION: ${{ github.workspace }}/app/keystore/
-
-    steps:
-      - uses: actions/checkout@v6
-      - name: Set up JDK 17
-        uses: actions/setup-java@v5
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-          cache: gradle
-
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
-
-      # Here we need to decode keystore.jks from base64 string and place it
-      # in the folder specified in the release signing configuration
-      - name: Decode Keystore
-        id: decode_keystore
-        uses: timheuer/base64-to-file@v1.2
-        with:
-          fileName: ${{ env.KEY_STORE_FILE }}
-          fileDir: ${{ env.KEY_STORE_LOCATION }}
-          encodedString: ${{ secrets.KEYSTORE }}
-
-      # create keystore path for gradle to read
-      - name: Create keystore path env var
-        run: |
-          store_path=${{ env.KEY_STORE_LOCATION }}${{ env.KEY_STORE_FILE }}
-          echo "KEY_STORE_PATH=$store_path" >> $GITHUB_ENV
-
-      - name: Create service_account.json
-        id: createServiceAccount
-        run: echo '${{ secrets.SERVICE_ACCOUNT_JSON }}' > service_account.json
-
-      - name: Deploy with fastlane
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: '3.2' # Not needed with a .ruby-version file
-          bundler-cache: true
-
-      - name: Distribute app to Prod track 🚀
-        run: |
-          track=${{ github.event_name == 'push' && 'production' || inputs.track }}
-          (cd ${{ github.workspace }} && bundle install && bundle exec fastlane $track)
+          GITHUB_TOKEN: ${{ github.token }}

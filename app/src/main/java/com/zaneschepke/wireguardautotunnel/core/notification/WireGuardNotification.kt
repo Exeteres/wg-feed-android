@@ -22,6 +22,7 @@ class WireGuardNotification(override val context: Context) : NotificationManager
     enum class NotificationChannels {
         VPN,
         AUTO_TUNNEL,
+        WG_FEED_REALTIME,
     }
 
     private val notificationManager = NotificationManagerCompat.from(context)
@@ -56,6 +57,8 @@ class WireGuardNotification(override val context: Context) : NotificationManager
                 setContentText(description)
                 setOnlyAlertOnce(onlyAlertOnce)
                 setOngoing(onGoing)
+                setAutoCancel(false)
+                setLocalOnly(true)
                 setPriority(NotificationCompat.PRIORITY_LOW)
                 setShowWhen(showTimestamp)
                 setSmallIcon(R.drawable.ic_notification)
@@ -144,6 +147,9 @@ class WireGuardNotification(override val context: Context) : NotificationManager
             NotificationChannels.VPN -> {
                 NotificationCompat.Builder(context, context.getString(R.string.vpn_channel_id))
             }
+            NotificationChannels.WG_FEED_REALTIME -> {
+                NotificationCompat.Builder(context, context.getString(R.string.wg_feed_realtime_channel_id))
+            }
         }
     }
 
@@ -165,6 +171,16 @@ class WireGuardNotification(override val context: Context) : NotificationManager
                     )
                     .apply {
                         description = context.getString(R.string.auto_tunnel_channel_description)
+                    }
+            }
+            NotificationChannels.WG_FEED_REALTIME -> {
+                NotificationChannel(
+                        context.getString(R.string.wg_feed_realtime_channel_id),
+                        context.getString(R.string.wg_feed_realtime_channel_name),
+                        importance,
+                    )
+                    .apply {
+                        description = context.getString(R.string.wg_feed_realtime_channel_description)
                     }
             }
         }

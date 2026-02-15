@@ -1,4 +1,3 @@
-
 import org.ajoberstar.grgit.Grgit
 import org.gradle.api.Project
 import org.semver4j.Semver
@@ -16,13 +15,13 @@ fun Project.languageList(): List<String> {
 }
 
 fun allowedLicenses(): List<String> {
-    return listOf("MIT", "Apache-2.0", "BSD-3-Clause")
+    return listOf("MIT", "Apache-2.0", "BSD-3-Clause", "ISC")
 }
 
 fun allowedLicenseUrls(): List<String> {
     return listOf("https://jsoup.org/license", "http://opensource.org/licenses/bsd-license.php", "https://github.com/journeyapps/zxing-android-embedded/blob/master/COPYING",
         "https://github.com/RikkaApps/Shizuku-API/blob/master/LICENSE", "https://github.com/rafi0101/Android-Room-Database-Backup/blob/master/LICENSE",
-        "https://opensource.org/license/mit")
+        "https://opensource.org/license/mit", "https://www.bouncycastle.org/licence.html")
 }
 
 fun buildLanguagesArray(languages: List<String>): String {

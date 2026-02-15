@@ -16,6 +16,7 @@
 
     <!--foreground service permissions-->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
 
     <!--start service on boot permission-->
@@ -113,6 +114,14 @@
                 android:value="androidx.startup"
                 tools:node="remove" />
         </provider>
+
+        <!-- WorkManager foreground service (required for foreground workers like wg-feed realtime sync) -->
+        <service
+            android:name="androidx.work.impl.foreground.SystemForegroundService"
+            android:exported="false"
+            android:foregroundServiceType="dataSync"
+            tools:node="merge" />
+
         <service
             android:name=".core.service.tile.TunnelControlTile"
             android:exported="true"

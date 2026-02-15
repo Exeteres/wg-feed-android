@@ -71,6 +71,30 @@ fun SupportScreen(viewModel: SupportViewModel = koinViewModel()) {
             modifier = Modifier.padding(horizontal = 16.dp),
             MaterialTheme.colorScheme.onSurface,
         )
+
+        Column {
+            GroupLabel(
+                stringResource(R.string.fork_disclaimer_title),
+                modifier = Modifier.padding(horizontal = 16.dp),
+            )
+            Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+                DescriptionText(stringResource(R.string.fork_disclaimer_body))
+                Spacer(Modifier.height(8.dp))
+            }
+            SurfaceRow(
+                leading = {
+                    Icon(
+                        ImageVector.vectorResource(R.drawable.github),
+                        contentDescription = null,
+                        modifier = Modifier.size(24.dp),
+                    )
+                },
+                title = context.getString(R.string.fork_repo_name),
+                trailing = { Icon(Icons.AutoMirrored.Outlined.Launch, null) },
+                onClick = { context.openWebUrl(context.getString(R.string.fork_repo_url)) },
+            )
+        }
+
         Column {
             GroupLabel(stringResource(R.string.resources), Modifier.padding(horizontal = 16.dp))
             SurfaceRow(

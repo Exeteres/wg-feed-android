@@ -20,6 +20,12 @@ fun Entity.toDomain(): Domain =
         position = position,
         autoTunnelApps = autoTunnelApps,
         isMetered = isMetered,
+        displayTitle = displayTitle,
+        displayDescription = displayDescription,
+        displayIconUrl = displayIconUrl,
+        feedSubscriptionId = feedSubscriptionId,
+        isReadOnly = isReadonly,
+        isRestartRequired = isRestartRequired,
     )
 
 fun Domain.toEntity(): Entity =
@@ -39,4 +45,10 @@ fun Domain.toEntity(): Entity =
         position = position,
         autoTunnelApps = autoTunnelApps,
         isMetered = isMetered,
+        displayTitle = displayTitle,
+        displayDescription = displayDescription,
+        displayIconUrl = displayIconUrl,
+        feedSubscriptionId = feedSubscriptionId,
+        isReadonly = isReadOnly,
+        isRestartRequired = isRestartRequired,
     )

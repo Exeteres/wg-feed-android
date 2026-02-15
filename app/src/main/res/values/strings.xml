@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">WG Tunnel</string>
+    <string name="app_name">WG Tunnel Feed</string>
     <string name="app_permission_title">Control tunnels and auto-tunnel features.</string>
     <string name="app_permission_description">https://hosted.weblate.org/translate/wg-tunnel/strings/en/?checksum=e52d7eb2e28a9a12Control tunnels and auto-tunnel features.</string>
     <string name="vpn_channel_id" translatable="false">VPN Channel</string>
@@ -464,4 +464,52 @@
     <string name="fdroid_url" translatable="false">https://apt.izzysoft.de/fdroid/index/apk/com.zaneschepke.wireguardautotunnel</string>
     <string name="import_url_description">The URL must be secure and serve a .conf file.</string>
     <string name="only_template">%1$s only</string>
+
+    <!-- wg-feed -->
+    <string name="subscriptions" translatable="false">Subscriptions</string>
+    <string name="tunnel_description" translatable="false">Description</string>
+    <string name="add_subscription" translatable="false">Add subscription</string>
+    <string name="subscription_url" translatable="false">Feed URL</string>
+    <string name="sync_disabled" translatable="false">Sync disabled</string>
+    <string name="duplicate_subscription" translatable="false">This subscription is already added.</string>
+    <string name="ignore_server_state" translatable="false">Prevent server from toggling tunnels</string>
+    <string name="last_checked" translatable="false">Last checked</string>
+    <string name="last_error" translatable="false">Last error</string>
+    <string name="subscription_not_found" translatable="false">Subscription not found</string>
+    <string name="subscription_section" translatable="false">Subscription</string>
+    <string name="subscription_managed_tunnel_note" translatable="false">This tunnel is managed by a subscription, so it can’t be edited.</string>
+    <string name="sync_now" translatable="false">Sync now</string>
+    <string name="sync_mode" translatable="false">Sync mode</string>
+    <string name="sync_mode_manual" translatable="false">Manual</string>
+    <string name="sync_mode_manual_desc" translatable="false">Only sync when you tap Sync now.</string>
+    <string name="sync_mode_polling" translatable="false">Polling</string>
+    <string name="sync_mode_polling_desc" translatable="false">Checks periodically. More power-saving.</string>
+    <string name="sync_mode_realtime" translatable="false">Realtime</string>
+    <string name="sync_mode_realtime_desc" translatable="false">Receives updates immediately in background worker.</string>
+    <string name="sync_mode_realtime_unsupported_desc" translatable="false">Realtime isn’t supported by this feed. Polling is enforced.</string>
+    <string name="change" translatable="false">Change</string>
+    <string name="approx_minutes" translatable="false">~ %1$d minutes</string>
+    <string name="approx_hours" translatable="false">~ %1$d hours</string>
+    <string name="sse_status" translatable="false">Realtime status</string>
+    <string name="sse_connecting" translatable="false">Connecting…</string>
+    <string name="sse_connected" translatable="false">Connected</string>
+    <string name="sse_reconnecting" translatable="false">Reconnecting…</string>
+    <string name="sse_disconnected" translatable="false">Disconnected</string>
+    <string name="wg_feed_realtime_channel_id" translatable="false">wg-feed Realtime</string>
+    <string name="wg_feed_realtime_channel_name" translatable="false">WG-feed realtime sync</string>
+    <string name="wg_feed_realtime_channel_description" translatable="false">Keeps subscriptions updated in realtime</string>
+    <string name="ignore_server_state_desc_on" translatable="false">Server is not allowed to toggle tunnels.</string>
+    <string name="ignore_server_state_desc_off" translatable="false">Server may toggle tunnels when forced.</string>
+    <string name="sync_interval" translatable="false">Sync interval</string>
+    <string name="next_sync" translatable="false">Next sync</string>
+    <string name="last_synced" translatable="false">Last synced</string>
+    <string name="problem" translatable="false">Problem</string>
+    <string name="wg_feed_realtime_tracking_count" translatable="false">Tracking %1$d subscription(s)</string>
+    <string name="tunnel_restart_required_message" translatable="false">Tunnel configuration changed. Restart the tunnel to apply updates.</string>
+    <string name="subscription_description" translatable="false">Description</string>
+    <string name="wg_feed_managing_tunnels_count" translatable="false">Managing %1$d tunnels</string>
+    <string name="fork_repo_name" translatable="false">Exeteres/wg-feed-android</string>
+    <string name="fork_repo_url" translatable="false">https://github.com/Exeteres/wg-feed-android</string>
+    <string name="fork_disclaimer_title">Fork notice</string>
+    <string name="fork_disclaimer_body">This app is a fork of WG Tunnel. The support links below point to the original WG Tunnel channels. If you have issues related to wg-feed or other fork-specific features, please check the fork repository first:</string>
 </resources>

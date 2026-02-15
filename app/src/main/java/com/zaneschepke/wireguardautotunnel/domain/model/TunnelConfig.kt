@@ -28,6 +28,12 @@ data class TunnelConfig(
     val position: Int = 0,
     val autoTunnelApps: Set<String> = setOf(),
     val isMetered: Boolean = false,
+    val displayTitle: String? = null,
+    val displayDescription: String? = null,
+    val displayIconUrl: String? = null,
+    val feedSubscriptionId: Int? = null,
+    val isReadOnly: Boolean = false,
+    val isRestartRequired: Boolean = false,
 ) {
 
     override fun equals(other: Any?): Boolean {
@@ -44,7 +50,13 @@ data class TunnelConfig(
             restartOnPingFailure == other.restartOnPingFailure &&
             tunnelNetworks == other.tunnelNetworks &&
             isIpv4Preferred == other.isIpv4Preferred &&
-            isMetered == other.isMetered
+            isMetered == other.isMetered &&
+            displayTitle == other.displayTitle &&
+            displayDescription == other.displayDescription &&
+            displayIconUrl == other.displayIconUrl &&
+            feedSubscriptionId == other.feedSubscriptionId &&
+            isReadOnly == other.isReadOnly &&
+            isRestartRequired == other.isRestartRequired
     }
 
     override fun hashCode(): Int {
@@ -52,6 +64,12 @@ data class TunnelConfig(
         result = 31 * result + name.hashCode()
         result = 31 * result + wgQuick.hashCode()
         result = 31 * result + amQuick.hashCode()
+        result = 31 * result + (displayTitle?.hashCode() ?: 0)
+        result = 31 * result + (displayDescription?.hashCode() ?: 0)
+        result = 31 * result + (displayIconUrl?.hashCode() ?: 0)
+        result = 31 * result + (feedSubscriptionId ?: 0)
+        result = 31 * result + isReadOnly.hashCode()
+        result = 31 * result + isRestartRequired.hashCode()
         return result
     }
 
