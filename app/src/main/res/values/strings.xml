@@ -501,8 +501,8 @@
     <string name="ignore_server_state_desc_on" translatable="false">Server is not allowed to toggle tunnels.</string>
     <string name="ignore_server_state_desc_off" translatable="false">Server may toggle tunnels when forced.</string>
     <string name="sync_interval" translatable="false">Sync interval</string>
-    <string name="next_sync" translatable="false">Next sync</string>
-    <string name="last_synced" translatable="false">Last synced</string>
+    <string name="next_sync" translatable="false">Next check</string>
+    <string name="last_synced" translatable="false">Last applied</string>
     <string name="problem" translatable="false">Problem</string>
     <string name="wg_feed_realtime_tracking_count" translatable="false">Tracking %1$d subscription(s)</string>
     <string name="tunnel_restart_required_message" translatable="false">Tunnel configuration changed. Restart the tunnel to apply updates.</string>

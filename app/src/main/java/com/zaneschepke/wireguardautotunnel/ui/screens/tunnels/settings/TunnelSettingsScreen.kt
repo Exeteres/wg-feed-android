@@ -64,7 +64,7 @@ fun TunnelSettingsScreen(
             Column {
                 GroupLabel(
                     stringResource(R.string.tunnel_description),
-                    modifier = Modifier.padding(horizontal = 16.dp),
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
                 )
                 Text(
                     text = desc,

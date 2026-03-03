@@ -75,7 +75,7 @@ fun SupportScreen(viewModel: SupportViewModel = koinViewModel()) {
         Column {
             GroupLabel(
                 stringResource(R.string.fork_disclaimer_title),
-                modifier = Modifier.padding(horizontal = 16.dp),
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
             )
             Column(modifier = Modifier.padding(horizontal = 16.dp)) {
                 DescriptionText(stringResource(R.string.fork_disclaimer_body))

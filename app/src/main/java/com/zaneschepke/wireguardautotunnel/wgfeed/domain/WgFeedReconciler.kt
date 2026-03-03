@@ -15,6 +15,12 @@ class WgFeedReconciler(
     private val managedTunnelDao: FeedManagedTunnelDao,
     private val tunnelManager: TunnelManager,
 ) {
+    private fun parseFeedQuickConfig(feedQuick: String): Pair<String, String> {
+        val amConfig = TunnelConfig.configFromAmQuick(feedQuick)
+        val wgQuick = amConfig.toWgQuickString(true)
+        val amQuick = amConfig.toAwgQuickString(true, false)
+        return wgQuick to amQuick
+    }
 
     data class ReconcileResult(
         val created: Int,
@@ -94,11 +100,13 @@ class WgFeedReconciler(
         val baseName = feedTunnel.name
         val uniqueName = makeUniqueByDashSuffix(baseName, existingNames)
 
+        val (wgQuick, amQuick) = parseFeedQuickConfig(feedTunnel.wgQuickConfig)
+
         val newConfig =
             TunnelConfig(
                 name = uniqueName,
-                wgQuick = feedTunnel.wgQuickConfig,
-                amQuick = "",
+                wgQuick = wgQuick,
+                amQuick = amQuick,
                 // Spec: when not forced, `enabled` is only a default for newly created tunnels.
                 // In manual mode, ignore server state entirely.
                 isActive = if (!subscription.ignoreServerState && !feedTunnel.forced) feedTunnel.enabled else false,
@@ -154,8 +162,10 @@ class WgFeedReconciler(
 
         var didConfigPayloadChange = false
 
-        if (local.wgQuick != feedTunnel.wgQuickConfig || local.amQuick.isNotBlank()) {
-            updatedLocal = updatedLocal.copy(wgQuick = feedTunnel.wgQuickConfig, amQuick = "")
+        val (desiredWgQuick, desiredAmQuick) = parseFeedQuickConfig(feedTunnel.wgQuickConfig)
+
+        if (local.wgQuick != desiredWgQuick || local.amQuick != desiredAmQuick) {
+            updatedLocal = updatedLocal.copy(wgQuick = desiredWgQuick, amQuick = desiredAmQuick)
             didUpdate = true
             didConfigPayloadChange = true
         }

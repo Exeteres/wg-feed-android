@@ -225,6 +225,8 @@ class WgFeedSyncer(
                                 ),
                                 lastCheckedAtMs = checkedAt,
                                 lastError = null,
+                                // 304 is still a successful sync; clear any previous terminal state.
+                                isSyncTerminal = false,
                             )
                         subscriptionDao.update(updated)
                         Timber.i(
